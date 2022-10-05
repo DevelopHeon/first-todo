@@ -15,4 +15,5 @@ public class TodoResource extends EntityModel<Todo> {
         super(todo, Arrays.asList(links));
         add(linkTo(TodoController.class).slash(todo.getId()).withSelfRel());
     }
+
 }

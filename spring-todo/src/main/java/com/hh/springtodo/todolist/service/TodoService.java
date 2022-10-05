@@ -18,4 +18,6 @@ public interface TodoService {
     void updateTodos(Todo originTodo, TodoDto todoDto);
 
     List<Todo> searchAll(String searchType, String keyword);
+
+    void updateStatus(Long id, String status);
 }

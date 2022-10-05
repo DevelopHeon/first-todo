@@ -13,7 +13,8 @@ public class TodoDto {
 
     @NotNull
     private String title;
-
     @NotNull
     private String content;
+
+    private String status;
 }

@@ -14,7 +14,7 @@ public class Todo {
 
     private String content;
 
-    private boolean isComplated;
+    private String status;
 
     private Date createDate;
 

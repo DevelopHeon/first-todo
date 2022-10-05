@@ -18,4 +18,6 @@ public interface TodoMapper {
     void updateTodos(Todo todo);
 
     List<Todo> searchAll(Map<String, String> map);
+
+    void updateStatus(Todo todo);
 }

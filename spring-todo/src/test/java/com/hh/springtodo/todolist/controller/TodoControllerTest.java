@@ -27,13 +27,10 @@ class TodoControllerTest {
 
     @Autowired
     MockMvc mockMvc;
-
     @Autowired
     private TodoMapper todoMapper;
-
     @Autowired
     ModelMapper modelMapper;
-
     @Autowired
     ObjectMapper objectMapper;
 
@@ -42,19 +39,19 @@ class TodoControllerTest {
     void createTodo() throws Exception {
         // given
         Todo newTodo = generatedTodo(100);
-
         // when then
         this.mockMvc.perform(post("/api/todos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newTodo)))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("title").exists());
+                .andExpect(jsonPath("title").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("links.update-todo").exists());
     }
-
     @Test
     @DisplayName("잘못된 입력 값으로 생성")
-    void createTodo404() throws Exception {
+    void createTodo400() throws Exception {
         Todo newTodo = Todo.builder()
                 .content("잘못 생성")
                 .build();
@@ -77,7 +74,8 @@ class TodoControllerTest {
 
         this.mockMvc.perform(get("/api/todos"))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("_embedded.todoList[0]._links.self").exists());
     }
 
     @Test
@@ -94,7 +92,8 @@ class TodoControllerTest {
                         .param("searchType", searchType)
                         .param("keyword", keyword))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("_embedded.todoList[0]._links.self").exists());
 
     }
     @Test
@@ -127,7 +126,10 @@ class TodoControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("title").exists())
                 .andExpect(jsonPath("content").exists())
-                .andExpect(jsonPath("_links.self").exists());
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.update-todo").exists())
+                .andExpect(jsonPath("_links.delete-todo").exists())
+                .andExpect(jsonPath("_links.query-todo").exists());
     }
 
     @Test
@@ -154,7 +156,8 @@ class TodoControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(todoDto)))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("_links.self").exists());
     }
 
     @Test
@@ -196,7 +199,6 @@ class TodoControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk());
     }
-
     @Test
     @DisplayName("존재하지 않는 todo 삭제 오류")
     void deleteTodos_isEmpty() throws Exception{
@@ -206,6 +208,20 @@ class TodoControllerTest {
         this.mockMvc.perform(delete("/api/todos/123232"))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("완료 상태로 변경 테스트")
+    void statusUpdate() throws Exception{
+        Todo todo = generatedTodo(10);
+        todoMapper.save(todo);
+        String status = "T";
+
+        this.mockMvc.perform(put("/api/todos")
+                        .param("id", todo.getId().toString())
+                        .param("status", status))
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 
     private static Todo generatedTodo(int index) {

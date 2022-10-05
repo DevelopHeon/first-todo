@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,12 +24,8 @@ public class TodoServiceImpl implements TodoService {
     ModelMapper modelMapper;
 
     @Override
-    @Transactional
     public Long save(TodoDto todoDto) {
-        Todo todo = Todo.builder()
-                .title(todoDto.getTitle())
-                .content(todoDto.getContent())
-                .build();
+        Todo todo = modelMapper.map(todoDto, Todo.class);
         todoMapper.save(todo);
         return todo.getId();
     }
@@ -42,17 +37,16 @@ public class TodoServiceImpl implements TodoService {
 
     @Override
     public Optional<Todo> findById(Long id) {
+
         return todoMapper.findById(id);
     }
 
     @Override
-    @Transactional
     public int deleteById(Long id) {
         return todoMapper.deleteById(id);
     }
 
     @Override
-    @Transactional
     public void updateTodos(Todo originTodo, TodoDto todoDto) {
         Todo todo = Todo.builder()
                 .id(originTodo.getId())
@@ -68,6 +62,15 @@ public class TodoServiceImpl implements TodoService {
         map.put("searchType", searchType);
         map.put("keyword", keyword);
         return todoMapper.searchAll(map);
+    }
+
+    @Override
+    public void updateStatus(Long id, String status) {
+        Todo todo = Todo.builder()
+                .id(id)
+                .status(status)
+                .build();
+        todoMapper.updateStatus(todo);
     }
 
 }

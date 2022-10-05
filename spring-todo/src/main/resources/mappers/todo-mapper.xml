@@ -4,7 +4,7 @@
 <mapper namespace="com.hh.springtodo.todolist.repository.TodoMapper">
     <insert id="save" parameterType="Todo" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO todo
-        (title, content, isComplated, createDate)
+        (title, content, status, createDate)
         VALUES (#{title}, #{content}, default, default)
     </insert>
 
@@ -30,8 +30,20 @@
 
     <update id="updateTodos" parameterType="Todo">
         UPDATE TODO
-        SET title = #{title},
+        SET
+            title = #{title},
             content = #{content}
+        WHERE id=#{id}
+    </update>
+    <update id="updateStatus" parameterType="Todo">
+        UPDATE TODO
+        SET
+            <if test='status == "T"'>
+                status = 'T'
+            </if>
+            <if test='status == "F"'>
+                status = 'F'
+            </if>
         WHERE id=#{id}
     </update>
 
