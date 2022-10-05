@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hh.springtodo.todolist.repository.TodoMapper">
+    <insert id="save" parameterType="Todo" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO todo
+        (title, content, isComplated, createDate)
+        VALUES (#{title}, #{content}, default, default)
+    </insert>
+
+    <select id="findAll" resultType="Todo">
+        SELECT * FROM TODO
+    </select>
+
+    <select id="findById" resultType="Todo">
+        SELECT * FROM TODO
+        WHERE id=#{id}
+    </select>
+
+    <select id="searchAll" resultType="Todo" parameterType="hashMap">
+        SELECT * FROM TODO
+        WHERE
+            <if test='searchType == "T"'>
+                title LIKE '%'||#{keyword}||'%'
+            </if>
+            <if test='searchType == "C"'>
+                content LIKE '%'||#{keyword}||'%'
+            </if>
+    </select>
+
+    <update id="updateTodos" parameterType="Todo">
+        UPDATE TODO
+        SET title = #{title},
+            content = #{content}
+        WHERE id=#{id}
+    </update>
+
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM TODO
+            WHERE id=#{id}
+    </delete>
+</mapper>
