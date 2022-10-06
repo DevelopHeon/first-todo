@@ -2,10 +2,11 @@ package com.hh.springtodo.todolist.entity;
 
 import lombok.*;
 
-import java.sql.Date;
+import java.time.LocalDateTime;
 
-@Getter @Setter @AllArgsConstructor
-@NoArgsConstructor @Builder @ToString
+@Getter @AllArgsConstructor
+@Builder @NoArgsConstructor
+@Setter
 public class Todo {
 
     private Long id;
@@ -14,8 +15,8 @@ public class Todo {
 
     private String content;
 
-    private String status;
+    private boolean status;
 
-    private Date createDate;
+    private LocalDateTime createDate;
 
 }

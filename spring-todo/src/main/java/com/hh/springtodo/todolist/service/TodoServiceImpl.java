@@ -2,11 +2,13 @@ package com.hh.springtodo.todolist.service;
 
 import com.hh.springtodo.todolist.dto.TodoDto;
 import com.hh.springtodo.todolist.entity.Todo;
+import com.hh.springtodo.todolist.error.PostNotFoundException;
 import com.hh.springtodo.todolist.repository.TodoMapper;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,10 +26,14 @@ public class TodoServiceImpl implements TodoService {
     ModelMapper modelMapper;
 
     @Override
-    public Long save(TodoDto todoDto) {
+    public Todo save(TodoDto todoDto) {
         Todo todo = modelMapper.map(todoDto, Todo.class);
         todoMapper.save(todo);
-        return todo.getId();
+        if(!ObjectUtils.isEmpty(todo.getId())){
+            Optional<Todo> optionalTodo = todoMapper.findById(todo.getId());
+            todo = optionalTodo.get();
+        }
+        return todo;
     }
 
     @Override
@@ -36,24 +42,33 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-    public Optional<Todo> findById(Long id) {
-
-        return todoMapper.findById(id);
+    public Todo findById(Long id) {
+        Optional<Todo> todo = todoMapper.findById(id);
+        if(!todo.isPresent()){
+            throw new PostNotFoundException("게시글 조회 실패");
+        }
+        return todo.get();
     }
 
     @Override
-    public int deleteById(Long id) {
-        return todoMapper.deleteById(id);
+    public void deleteById(Long id) {
+        int result = todoMapper.deleteById(id);
+        if(result < 1){
+            throw new PostNotFoundException("게시글 삭제 실패");
+        }
     }
 
     @Override
-    public void updateTodos(Todo originTodo, TodoDto todoDto) {
+    public void updateTodos(Long id, TodoDto todoDto) {
         Todo todo = Todo.builder()
-                .id(originTodo.getId())
+                .id(id)
                 .title(todoDto.getTitle())
                 .content(todoDto.getContent())
                 .build();
-        this.todoMapper.updateTodos(todo);
+       int result = this.todoMapper.updateTodos(todo);
+        if(result < 1){
+            throw new PostNotFoundException("업데이트 실패");
+        }
     }
 
     @Override
@@ -65,12 +80,15 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-    public void updateStatus(Long id, String status) {
+    public void updateStatus(Long id, boolean status) {
         Todo todo = Todo.builder()
                 .id(id)
                 .status(status)
                 .build();
-        todoMapper.updateStatus(todo);
+        int result = todoMapper.updateStatus(todo);
+        if(result < 1){
+            throw new PostNotFoundException("상태 변경 실패");
+        }
     }
 
 }

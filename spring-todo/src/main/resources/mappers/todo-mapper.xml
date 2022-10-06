@@ -38,11 +38,11 @@
     <update id="updateStatus" parameterType="Todo">
         UPDATE TODO
         SET
-            <if test='status == "T"'>
-                status = 'T'
+            <if test='status == true'>
+                status = 'Y'
             </if>
-            <if test='status == "F"'>
-                status = 'F'
+            <if test='status == false'>
+                status = 'N'
             </if>
         WHERE id=#{id}
     </update>

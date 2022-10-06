@@ -1,4 +1,4 @@
-package com.hh.springtodo.todolist.common;
+package com.hh.springtodo.todolist.error;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -12,6 +12,8 @@ import java.io.IOException;
 public class ErrorSerializer extends JsonSerializer<Errors> {
     @Override
     public void serialize(Errors errors, JsonGenerator gen, SerializerProvider serializerProvider) throws IOException {
+        gen.writeFieldName("errors");
+        gen.writeStartArray();
         errors.getFieldErrors().forEach(e -> {
             try {
                 gen.writeStartObject();

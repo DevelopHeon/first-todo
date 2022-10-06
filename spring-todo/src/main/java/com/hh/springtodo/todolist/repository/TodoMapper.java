@@ -15,9 +15,9 @@ public interface TodoMapper {
     Optional<Todo> findById(Long id);
     int deleteById(Long id);
 
-    void updateTodos(Todo todo);
+    int updateTodos(Todo todo);
 
     List<Todo> searchAll(Map<String, String> map);
 
-    void updateStatus(Todo todo);
+    int updateStatus(Todo todo);
 }

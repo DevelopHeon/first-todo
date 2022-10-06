@@ -2,18 +2,16 @@ package com.hh.springtodo.todolist.controller;
 
 import com.hh.springtodo.todolist.dto.TodoDto;
 import com.hh.springtodo.todolist.entity.Todo;
+import com.hh.springtodo.todolist.resource.ErrorResource;
 import com.hh.springtodo.todolist.resource.TodoResource;
 import com.hh.springtodo.todolist.service.TodoService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +20,6 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -30,40 +27,37 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @RequiredArgsConstructor
 @RequestMapping("/api/todos")
 public class TodoController {
-
     private final TodoService todoService;
 
-    private Logger log = LoggerFactory.getLogger(TodoController.class);
-
+    @ApiOperation(value = "TodoList 생성")
     @PostMapping
-    @ApiOperation(value="Todo 생성", notes = "성공 시 link 반환")
     public ResponseEntity createTodos(@RequestBody @Valid TodoDto todoDto,
                                       Errors errors) {
         if(errors.hasErrors()){
-            return ResponseEntity.badRequest().build();
+            return badRequest(errors);
         }
-        Long todoId = todoService.save(todoDto);
 
-        WebMvcLinkBuilder selfLink = linkTo(TodoController.class).slash(todoId);
+        Todo todo = todoService.save(todoDto);
+        WebMvcLinkBuilder selfLink = linkTo(TodoController.class).slash(todo.getId());
         URI uri = selfLink.toUri();
-        Todo todo = todoService.findById(todoId).get();
 
         TodoResource todoResource = new TodoResource(todo);
         todoResource.add(linkTo(TodoController.class).withRel("query-todos"));
-        todoResource.add(linkTo(TodoController.class).slash(todoId).withRel("update-todo"));
-        todoResource.add(linkTo(TodoController.class).slash(todoId).withRel("delete-todo"));
+        todoResource.add(selfLink.withRel("update-todo"));
+        todoResource.add(selfLink.withRel("delete-todo"));
 
         return ResponseEntity.created(uri).body(todoResource);
     }
 
-    @GetMapping
-    @ApiOperation(value="TodoList 전체 조회 및 조건 조회")
+
+    @ApiOperation(value = "TodoList 전체 조회 및 조건 조회")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "searchType", value = "검색할 종류", dataType = "string"),
-            @ApiImplicitParam(name = "keyword", value = "검색어", dataType = "string")
+            @ApiImplicitParam(name = "searchType", value = "검색 조건"),
+            @ApiImplicitParam(name = "keyword", value = "검색어")
     })
-    public ResponseEntity queryTodos(@RequestParam(required = false, defaultValue = "T") String searchType,
-                                      @RequestParam(required = false) String keyword){
+    @GetMapping
+    public ResponseEntity queryTodos(@RequestParam(required = false) String searchType,
+                                     @RequestParam(required = false) String keyword){
         List<EntityModel<Todo>> result = new ArrayList<>();
         List<Todo> todoList = null;
         if(keyword == null){
@@ -71,9 +65,7 @@ public class TodoController {
         }else{
             todoList = todoService.searchAll(searchType, keyword);
         }
-        if(todoList.size() < 1){
-            return ResponseEntity.notFound().build();
-        }
+
         for(Todo todo : todoList){
             EntityModel<Todo> entityModel = EntityModel.of(todo);
             entityModel.add(linkTo(TodoController.class).slash(todo.getId()).withSelfRel());
@@ -82,14 +74,12 @@ public class TodoController {
         return ResponseEntity.ok(CollectionModel.of(result, linkTo(TodoController.class).withSelfRel()));
     }
 
+    @ApiOperation(value = "TodoList 하나 조회")
+    @ApiImplicitParam(name = "id", value = "TodoList 고유 번호")
     @GetMapping("/{id}")
-    @ApiOperation(value="TodoList 하나만 조회")
-    public ResponseEntity getTodos(@PathVariable Long id){
-        Optional<Todo> optionalTodo = this.todoService.findById(id);
-        if(!optionalTodo.isPresent()){
-            return ResponseEntity.notFound().build();
-        }
-        Todo todo = optionalTodo.get();
+    public ResponseEntity getTodos(@PathVariable Long id) {
+        Todo todo = this.todoService.findById(id);
+
         TodoResource todoResource = new TodoResource(todo);
         todoResource.add(linkTo(TodoController.class).slash(todo.getId()).withRel("update-todo"));
         todoResource.add(linkTo(TodoController.class).slash(todo.getId()).withRel("delete-todo"));
@@ -98,45 +88,43 @@ public class TodoController {
         return ResponseEntity.ok(todoResource);
     }
 
+    @ApiOperation(value = "TodoList 수정")
+    @ApiImplicitParam(name = "id", value = "TodoList 고유 번호")
     @PutMapping("/{id}")
-    @ApiOperation(value="TodoList 수정", notes = "성공 시 수정 된 todolist 반환")
     public ResponseEntity updateTodos(@PathVariable Long id,
                                       @RequestBody @Valid TodoDto todoDto,
-                                      Errors errors){
-        Optional<Todo> optionalTodo = this.todoService.findById(id);
-        if(!optionalTodo.isPresent()){
-            return ResponseEntity.notFound().build();
-        }
-        Todo originTodo = optionalTodo.get();
+                                      Errors errors) {
         if(errors.hasErrors()){
-            return ResponseEntity.badRequest().build();
+            return badRequest(errors);
         }
-        this.todoService.updateTodos(originTodo, todoDto);
-        optionalTodo = todoService.findById(originTodo.getId());
-        Todo updateTodo = optionalTodo.get();
 
-        TodoResource todoResource = new TodoResource(updateTodo);
+        this.todoService.updateTodos(id, todoDto);
+        Todo todo = todoService.findById(id);
+
+        TodoResource todoResource = new TodoResource(todo);
         return ResponseEntity.ok(todoResource);
     }
 
+    @ApiOperation(value = "TodoList Status 수정")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "TodoList 고유 번호"),
+            @ApiImplicitParam(name = "status", value = "TodoList 완료 상태")
+    })
     @PutMapping
-    @ApiOperation(value="TodoList 완료 상태 변경")
     public ResponseEntity updateStatus(@RequestParam Long id,
-                                       @RequestParam String status){
+                                       @RequestParam boolean status){
         this.todoService.updateStatus(id, status);
-        return new ResponseEntity("상태 변경 성공", HttpStatus.OK);
+        return ResponseEntity.ok("상태 변경 성공");
     }
 
+    @ApiOperation(value = "TodoList 삭제")
+    @ApiImplicitParam(name = "id", value = "TodoList 고유 번호")
     @DeleteMapping("/{id}")
-    @ApiOperation(value="TodoList 삭제하기")
     public ResponseEntity deleteTodos(@PathVariable Long id){
-        int result = this.todoService.deleteById(id);
-        if(result < 1){
-            return ResponseEntity.notFound().build();
-        }
-        return new ResponseEntity("삭제 성공", HttpStatus.OK);
+        this.todoService.deleteById(id);
+        return ResponseEntity.ok("게시글 삭제 성공");
     }
     private static ResponseEntity badRequest(Errors errors) {
-        return ResponseEntity.badRequest().body(errors);
+        return ResponseEntity.badRequest().body(new ErrorResource(errors));
     }
 }

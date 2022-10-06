@@ -47,7 +47,7 @@ class TodoControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("title").exists())
                 .andExpect(jsonPath("_links.self").exists())
-                .andExpect(jsonPath("links.update-todo").exists());
+                .andExpect(jsonPath("_links.update-todo").exists());
     }
     @Test
     @DisplayName("잘못된 입력 값으로 생성")
@@ -60,7 +60,8 @@ class TodoControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newTodo)))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("errors[0].field").exists());
     }
 
     @Test
@@ -86,7 +87,7 @@ class TodoControllerTest {
             todoMapper.save(todo);
         }
         String searchType = "T";
-        String keyword = "1";
+        String keyword = "11";
 
         this.mockMvc.perform(get("/api/todos")
                         .param("searchType", searchType)
@@ -110,7 +111,7 @@ class TodoControllerTest {
                         .param("searchType", searchType)
                         .param("keyword", keyword))
                 .andDo(print())
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -215,13 +216,24 @@ class TodoControllerTest {
     void statusUpdate() throws Exception{
         Todo todo = generatedTodo(10);
         todoMapper.save(todo);
-        String status = "T";
+        boolean status = true;
 
         this.mockMvc.perform(put("/api/todos")
                         .param("id", todo.getId().toString())
-                        .param("status", status))
+                        .param("status", String.valueOf(status)))
                 .andDo(print())
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("없는 게시글 상태 변경 테스트")
+    void statusUpdate_notFound() throws Exception {
+
+        this.mockMvc.perform(put("/api/todos")
+                .param("id", "12321")
+                .param("status", "true"))
+                .andDo(print())
+                .andExpect(status().isNotFound());
     }
 
     private static Todo generatedTodo(int index) {
