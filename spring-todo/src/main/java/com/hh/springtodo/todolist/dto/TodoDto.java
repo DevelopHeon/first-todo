@@ -23,6 +23,6 @@ public class TodoDto {
     @NotNull
     private String content;
 
-    @ApiModelProperty(value = "TodoList 완료 상태")
-    private boolean status;
+    @ApiModelProperty(value = "TodoList 완료 상태", example = "false")
+    private Boolean status;
 }

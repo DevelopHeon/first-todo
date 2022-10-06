@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.util.HashMap;
@@ -26,6 +27,7 @@ public class TodoServiceImpl implements TodoService {
     ModelMapper modelMapper;
 
     @Override
+    @Transactional
     public Todo save(TodoDto todoDto) {
         Todo todo = modelMapper.map(todoDto, Todo.class);
         todoMapper.save(todo);
@@ -51,6 +53,7 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
         int result = todoMapper.deleteById(id);
         if(result < 1){
@@ -59,6 +62,7 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
+    @Transactional
     public void updateTodos(Long id, TodoDto todoDto) {
         Todo todo = Todo.builder()
                 .id(id)
@@ -80,7 +84,8 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-    public void updateStatus(Long id, boolean status) {
+    @Transactional
+    public void updateStatus(Long id, Boolean status) {
         Todo todo = Todo.builder()
                 .id(id)
                 .status(status)

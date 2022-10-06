@@ -15,6 +15,7 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.net.URI;
@@ -42,9 +43,9 @@ public class TodoController {
         URI uri = selfLink.toUri();
 
         TodoResource todoResource = new TodoResource(todo);
-        todoResource.add(linkTo(TodoController.class).withRel("query-todos"));
-        todoResource.add(selfLink.withRel("update-todo"));
-        todoResource.add(selfLink.withRel("delete-todo"));
+        todoResource.add(linkTo(TodoController.class).withRel("queryTodos"));
+        todoResource.add(selfLink.withRel("updateTodos"));
+        todoResource.add(selfLink.withRel("deleteTodos"));
 
         return ResponseEntity.created(uri).body(todoResource);
     }
@@ -52,7 +53,7 @@ public class TodoController {
 
     @ApiOperation(value = "TodoList 전체 조회 및 조건 조회")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "searchType", value = "검색 조건"),
+            @ApiImplicitParam(name = "searchType", value = "검색 조건(T = 제목, C = 내용)"),
             @ApiImplicitParam(name = "keyword", value = "검색어")
     })
     @GetMapping
@@ -75,21 +76,21 @@ public class TodoController {
     }
 
     @ApiOperation(value = "TodoList 하나 조회")
-    @ApiImplicitParam(name = "id", value = "TodoList 고유 번호")
+    @ApiImplicitParam(name = "id", value = "TodoList 고유 번호", example = "1")
     @GetMapping("/{id}")
     public ResponseEntity getTodos(@PathVariable Long id) {
         Todo todo = this.todoService.findById(id);
 
         TodoResource todoResource = new TodoResource(todo);
-        todoResource.add(linkTo(TodoController.class).slash(todo.getId()).withRel("update-todo"));
-        todoResource.add(linkTo(TodoController.class).slash(todo.getId()).withRel("delete-todo"));
-        todoResource.add(linkTo(TodoController.class).withRel("query-todo"));
+        todoResource.add(linkTo(TodoController.class).slash(todo.getId()).withRel("updateTodos"));
+        todoResource.add(linkTo(TodoController.class).slash(todo.getId()).withRel("deleteTodos"));
+        todoResource.add(linkTo(TodoController.class).withRel("queryTodos"));
 
         return ResponseEntity.ok(todoResource);
     }
 
     @ApiOperation(value = "TodoList 수정")
-    @ApiImplicitParam(name = "id", value = "TodoList 고유 번호")
+    @ApiImplicitParam(name = "id", value = "TodoList 고유 번호", example = "1")
     @PutMapping("/{id}")
     public ResponseEntity updateTodos(@PathVariable Long id,
                                       @RequestBody @Valid TodoDto todoDto,
@@ -107,18 +108,18 @@ public class TodoController {
 
     @ApiOperation(value = "TodoList Status 수정")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "id", value = "TodoList 고유 번호"),
+            @ApiImplicitParam(name = "id", value = "TodoList 고유 번호", example = "1"),
             @ApiImplicitParam(name = "status", value = "TodoList 완료 상태")
     })
-    @PutMapping
+    @PatchMapping
     public ResponseEntity updateStatus(@RequestParam Long id,
-                                       @RequestParam boolean status){
+                                       @RequestParam Boolean status){
         this.todoService.updateStatus(id, status);
         return ResponseEntity.ok("상태 변경 성공");
     }
 
     @ApiOperation(value = "TodoList 삭제")
-    @ApiImplicitParam(name = "id", value = "TodoList 고유 번호")
+    @ApiImplicitParam(name = "id", value = "TodoList 고유 번호", example = "1")
     @DeleteMapping("/{id}")
     public ResponseEntity deleteTodos(@PathVariable Long id){
         this.todoService.deleteById(id);

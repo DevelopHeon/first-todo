@@ -3,7 +3,7 @@ CREATE TABLE TODO(
     title VARCHAR(255) NOT NULL ,
     content VARCHAR(255) NOT NULL,
     status VARCHAR(1) DEFAULT 'N',
-    createDate DATE DEFAULT NOW()
+    createDate TIMESTAMP DEFAULT NOW()
 );
 INSERT INTO TODO
 (title, content, status, createDate)

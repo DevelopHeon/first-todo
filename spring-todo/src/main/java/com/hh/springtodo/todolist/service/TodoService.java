@@ -18,5 +18,5 @@ public interface TodoService {
 
     List<Todo> searchAll(String searchType, String keyword);
 
-    void updateStatus(Long id, boolean status);
+    void updateStatus(Long id, Boolean status);
 }

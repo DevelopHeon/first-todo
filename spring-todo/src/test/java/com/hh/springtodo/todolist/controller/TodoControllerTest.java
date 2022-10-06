@@ -15,6 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.stream.IntStream;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -38,7 +40,7 @@ class TodoControllerTest {
     @DisplayName("생성 test")
     void createTodo() throws Exception {
         // given
-        Todo newTodo = generatedTodo(100);
+        Todo newTodo = buildTodo(100);
         // when then
         this.mockMvc.perform(post("/api/todos")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -47,7 +49,7 @@ class TodoControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("title").exists())
                 .andExpect(jsonPath("_links.self").exists())
-                .andExpect(jsonPath("_links.update-todo").exists());
+                .andExpect(jsonPath("_links.updateTodos").exists());
     }
     @Test
     @DisplayName("잘못된 입력 값으로 생성")
@@ -67,12 +69,10 @@ class TodoControllerTest {
     @Test
     @DisplayName("전체 조회 test")
     void queryTodos() throws Exception{
-
         for(int i=0; i<31; i++){
-            Todo todo = generatedTodo(i);
+            Todo todo = buildTodo(i);
             todoMapper.save(todo);
         }
-
         this.mockMvc.perform(get("/api/todos"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -83,7 +83,7 @@ class TodoControllerTest {
     @DisplayName("검색 테스트")
     void searchTodos() throws Exception{
         for(int i=0; i<31; i++){
-            Todo todo = generatedTodo(i);
+            Todo todo = buildTodo(i);
             todoMapper.save(todo);
         }
         String searchType = "T";
@@ -101,7 +101,7 @@ class TodoControllerTest {
     @DisplayName("없는 값 검색")
     void searchTodos_notFound() throws Exception {
         for(int i=0; i<31; i++){
-            Todo todo = generatedTodo(i);
+            Todo todo = buildTodo(i);
             todoMapper.save(todo);
         }
         String searchType = "T";
@@ -118,7 +118,7 @@ class TodoControllerTest {
     @DisplayName("todo 상세 조회")
     void getTodos() throws Exception{
         // given
-        Todo todo = generatedTodo(100);
+        Todo todo = buildTodo(100);
         todoMapper.save(todo);
 
         // when then
@@ -128,9 +128,9 @@ class TodoControllerTest {
                 .andExpect(jsonPath("title").exists())
                 .andExpect(jsonPath("content").exists())
                 .andExpect(jsonPath("_links.self").exists())
-                .andExpect(jsonPath("_links.update-todo").exists())
-                .andExpect(jsonPath("_links.delete-todo").exists())
-                .andExpect(jsonPath("_links.query-todo").exists());
+                .andExpect(jsonPath("_links.updateTodos").exists())
+                .andExpect(jsonPath("_links.deleteTodos").exists())
+                .andExpect(jsonPath("_links.queryTodos").exists());
     }
 
     @Test
@@ -146,7 +146,7 @@ class TodoControllerTest {
     @DisplayName("todo 정상 수정하기 테스트")
     void putTodos() throws Exception{
         // given
-        Todo todo = generatedTodo(10);
+        Todo todo = buildTodo(10);
         todoMapper.save(todo);
         TodoDto todoDto = modelMapper.map(todo, TodoDto.class);
         String newTitle = "수정 테스트";
@@ -164,7 +164,7 @@ class TodoControllerTest {
     @Test
     @DisplayName("없는 todo 수정")
     void putTodos_isEmpty() throws Exception{
-        Todo todo = generatedTodo(10);
+        Todo todo = buildTodo(10);
         todoMapper.save(todo);
         TodoDto todoDto = modelMapper.map(todo, TodoDto.class);
 
@@ -178,7 +178,7 @@ class TodoControllerTest {
     @Test
     @DisplayName("입력 값 없이 수정")
     void putTodos_Input_Empty() throws Exception{
-        Todo todo = generatedTodo(10);
+        Todo todo = buildTodo(10);
         todoMapper.save(todo);
         TodoDto updateTodo = new TodoDto();
         // when then
@@ -193,7 +193,7 @@ class TodoControllerTest {
     @DisplayName("정상적으로 todo 삭제하기")
     void deleteTodos() throws Exception{
         // given
-        Todo todo = generatedTodo(10);
+        Todo todo = buildTodo(10);
         todoMapper.save(todo);
 
         this.mockMvc.perform(delete("/api/todos/{id}", todo.getId()))
@@ -203,7 +203,7 @@ class TodoControllerTest {
     @Test
     @DisplayName("존재하지 않는 todo 삭제 오류")
     void deleteTodos_isEmpty() throws Exception{
-        Todo todo = generatedTodo(10);
+        Todo todo = buildTodo(10);
         todoMapper.save(todo);
 
         this.mockMvc.perform(delete("/api/todos/123232"))
@@ -214,11 +214,11 @@ class TodoControllerTest {
     @Test
     @DisplayName("완료 상태로 변경 테스트")
     void statusUpdate() throws Exception{
-        Todo todo = generatedTodo(10);
+        Todo todo = buildTodo(10);
         todoMapper.save(todo);
         boolean status = true;
 
-        this.mockMvc.perform(put("/api/todos")
+        this.mockMvc.perform(patch("/api/todos")
                         .param("id", todo.getId().toString())
                         .param("status", String.valueOf(status)))
                 .andDo(print())
@@ -229,18 +229,16 @@ class TodoControllerTest {
     @DisplayName("없는 게시글 상태 변경 테스트")
     void statusUpdate_notFound() throws Exception {
 
-        this.mockMvc.perform(put("/api/todos")
+        this.mockMvc.perform(patch("/api/todos")
                 .param("id", "12321")
                 .param("status", "true"))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
-
-    private static Todo generatedTodo(int index) {
+    private static Todo buildTodo(int index) {
         return Todo.builder()
                 .title("테스트 제목 " + index)
                 .content("테스트 내용")
                 .build();
     }
-
 }
