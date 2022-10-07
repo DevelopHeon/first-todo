@@ -12,15 +12,12 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
 
-    private final String API_NAME = "Todo-list";
-    private final String API_DISCRIPTION = "TodoList 명세";
+    private final String API_NAME = "Todo API";
+    private final String API_DISCRIPTION = "Todo API 문서";
     @Bean
     public Docket swaggerApi(){
         return new Docket(DocumentationType.SWAGGER_2)
@@ -36,22 +33,10 @@ public class SwaggerConfig {
 
     private ApiInfo sgInfo() {
         return new ApiInfoBuilder()
-                .title("TODO API")
-                .description("TODO API 문서")
+                .title(API_NAME)
+                .description(API_DISCRIPTION)
                 .build();
 
     }
 
-    private Set<String> getConsumes() {
-        Set<String> consumes = new HashSet<>();
-        consumes.add("application/json:charset=UTF-8");
-        consumes.add("application/x-www-form-urlencoded");
-        return consumes;
-    }
-
-    private Set<String> getProducesTypes() {
-        Set<String> produces = new HashSet<>();
-        produces.add("application/json:charset=UTF-8");
-        return produces;
-    }
 }

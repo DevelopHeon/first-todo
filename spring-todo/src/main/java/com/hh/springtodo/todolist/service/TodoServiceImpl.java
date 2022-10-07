@@ -10,7 +10,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,10 +31,7 @@ public class TodoServiceImpl implements TodoService {
     public Todo save(TodoDto todoDto) {
         Todo todo = modelMapper.map(todoDto, Todo.class);
         todoMapper.save(todo);
-        if(!ObjectUtils.isEmpty(todo.getId())){
-            Optional<Todo> optionalTodo = todoMapper.findById(todo.getId());
-            todo = optionalTodo.get();
-        }
+        todo = findById(todo.getId());
         return todo;
     }
 
