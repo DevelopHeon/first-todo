@@ -2,6 +2,7 @@ package com.hh.springtodo.todolist.service;
 
 import com.hh.springtodo.todolist.dto.TodoDto;
 import com.hh.springtodo.todolist.entity.Todo;
+import com.hh.springtodo.todolist.error.FindBadRequestException;
 import com.hh.springtodo.todolist.error.PostNotFoundException;
 import com.hh.springtodo.todolist.repository.TodoMapper;
 import lombok.RequiredArgsConstructor;
@@ -55,28 +56,27 @@ public class TodoServiceImpl implements TodoService {
     @Override
     @Transactional
     public void deleteById(Long id) {
-        int result = todoMapper.deleteById(id);
-        if(result < 1){
-            throw new PostNotFoundException("게시글 삭제 실패");
-        }
+        findById(id);
+        todoMapper.deleteById(id);
     }
 
     @Override
     @Transactional
     public void updateTodos(Long id, TodoDto todoDto) {
+        findById(id);
         Todo todo = Todo.builder()
                 .id(id)
                 .title(todoDto.getTitle())
                 .content(todoDto.getContent())
                 .build();
-       int result = this.todoMapper.updateTodos(todo);
-        if(result < 1){
-            throw new PostNotFoundException("업데이트 실패");
-        }
+       this.todoMapper.updateTodos(todo);
     }
 
     @Override
     public List<Todo> searchAll(String searchType, String keyword) {
+        if(!(searchType.equals("T") || searchType.equals("C"))){
+            throw new FindBadRequestException("잘못된 요청입니다.");
+        }
         Map<String, String> map = new HashMap<>();
         map.put("searchType", searchType);
         map.put("keyword", keyword);
@@ -86,14 +86,12 @@ public class TodoServiceImpl implements TodoService {
     @Override
     @Transactional
     public void updateStatus(Long id, Boolean status) {
+        findById(id);
         Todo todo = Todo.builder()
                 .id(id)
                 .status(status)
                 .build();
-        int result = todoMapper.updateStatus(todo);
-        if(result < 1){
-            throw new PostNotFoundException("상태 변경 실패");
-        }
+        todoMapper.updateStatus(todo);
     }
 
 }

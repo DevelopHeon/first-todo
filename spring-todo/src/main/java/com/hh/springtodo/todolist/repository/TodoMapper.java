@@ -13,11 +13,11 @@ public interface TodoMapper {
 
     List<Todo> findAll();
     Optional<Todo> findById(Long id);
-    int deleteById(Long id);
+    void deleteById(Long id);
 
-    int updateTodos(Todo todo);
+    void updateTodos(Todo todo);
 
     List<Todo> searchAll(Map<String, String> map);
 
-    int updateStatus(Todo todo);
+    void updateStatus(Todo todo);
 }

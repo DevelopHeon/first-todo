@@ -15,7 +15,6 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.net.URI;
@@ -66,16 +65,16 @@ public class TodoController {
         }else{
             todoList = todoService.searchAll(searchType, keyword);
         }
-
         for(Todo todo : todoList){
             EntityModel<Todo> entityModel = EntityModel.of(todo);
             entityModel.add(linkTo(TodoController.class).slash(todo.getId()).withSelfRel());
+            entityModel.add(linkTo(TodoController.class).withRel("updateStatus"));
             result.add(entityModel);
         }
         return ResponseEntity.ok(CollectionModel.of(result, linkTo(TodoController.class).withSelfRel()));
     }
 
-    @ApiOperation(value = "TodoList 하나 조회")
+    @ApiOperation(value = "TodoList 단일 조회")
     @ApiImplicitParam(name = "id", value = "TodoList 고유 번호", example = "1")
     @GetMapping("/{id}")
     public ResponseEntity getTodos(@PathVariable Long id) {
@@ -98,7 +97,6 @@ public class TodoController {
         if(errors.hasErrors()){
             return badRequest(errors);
         }
-
         this.todoService.updateTodos(id, todoDto);
         Todo todo = todoService.findById(id);
 
