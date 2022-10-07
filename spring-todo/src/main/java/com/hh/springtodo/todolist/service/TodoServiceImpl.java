@@ -76,6 +76,7 @@ public class TodoServiceImpl implements TodoService {
         Map<String, String> map = new HashMap<>();
         map.put("searchType", searchType);
         map.put("keyword", keyword);
+
         return todoMapper.searchAll(map);
     }
 

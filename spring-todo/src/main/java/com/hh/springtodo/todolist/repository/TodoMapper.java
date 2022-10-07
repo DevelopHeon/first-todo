@@ -17,7 +17,7 @@ public interface TodoMapper {
 
     void updateTodos(Todo todo);
 
-    List<Todo> searchAll(Map<String, String> map);
+    List<Todo> searchAll(Map<String, String> find);
 
     void updateStatus(Todo todo);
 }

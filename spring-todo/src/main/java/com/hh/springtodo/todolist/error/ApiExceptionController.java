@@ -15,28 +15,24 @@ public class ApiExceptionController {
 
     @ExceptionHandler(PostNotFoundException.class)
     public ResponseEntity handlePostNotFoundException(PostNotFoundException e) {
-        HttpStatus httpStatus = HttpStatus.NOT_FOUND;
         ApiError apiError = ApiError.builder()
                 .message(e.getMessage())
-                .httpStatus(httpStatus)
                 .code("ERROR_404")
                 .build();
 
         EntityModel<ApiError> errorResource = getIndex(apiError);
-        return ResponseEntity.status(httpStatus).body(errorResource);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResource);
     }
 
     @ExceptionHandler(FindBadRequestException.class)
     public ResponseEntity handleFindBadRequestException(FindBadRequestException e){
-        HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
         ApiError apiError = ApiError.builder()
                 .message(e.getMessage())
-                .httpStatus(httpStatus)
                 .code("ERROR_400")
                 .build();
         EntityModel<ApiError> errorResource = getIndex(apiError);
 
-        return ResponseEntity.status(httpStatus).body(errorResource);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResource);
     }
 
     private static EntityModel<ApiError> getIndex(ApiError apiError) {
