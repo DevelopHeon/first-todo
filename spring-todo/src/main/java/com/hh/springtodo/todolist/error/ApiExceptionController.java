@@ -14,7 +14,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class ApiExceptionController {
 
     @ExceptionHandler(PostNotFoundException.class)
-    public ResponseEntity handlePostNotFoundException(PostNotFoundException e) {
+    protected ResponseEntity handlePostNotFoundException(PostNotFoundException e) {
         ApiError apiError = ApiError.builder()
                 .message(e.getMessage())
                 .code("ERROR_404")
@@ -25,7 +25,7 @@ public class ApiExceptionController {
     }
 
     @ExceptionHandler(FindBadRequestException.class)
-    public ResponseEntity handleFindBadRequestException(FindBadRequestException e){
+    protected ResponseEntity handleFindBadRequestException(FindBadRequestException e){
         ApiError apiError = ApiError.builder()
                 .message(e.getMessage())
                 .code("ERROR_400")

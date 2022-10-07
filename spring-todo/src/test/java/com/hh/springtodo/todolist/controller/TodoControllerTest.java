@@ -46,8 +46,7 @@ class TodoControllerTest {
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("title").exists())
-                .andExpect(jsonPath("_links.self").exists())
-                .andExpect(jsonPath("_links.updateTodos").exists());
+                .andExpect(jsonPath("_links.self").exists());
     }
     @Test
     @DisplayName("잘못된 입력 값으로 생성")

@@ -6,7 +6,6 @@ import com.hh.springtodo.todolist.error.FindBadRequestException;
 import com.hh.springtodo.todolist.error.PostNotFoundException;
 import com.hh.springtodo.todolist.repository.TodoMapper;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,13 +22,13 @@ public class TodoServiceImpl implements TodoService {
     @Autowired
     private final TodoMapper todoMapper;
 
-    @Autowired
-    ModelMapper modelMapper;
-
     @Override
     @Transactional
     public Todo save(TodoDto todoDto) {
-        Todo todo = modelMapper.map(todoDto, Todo.class);
+        Todo todo = Todo.builder()
+                .title(todoDto.getTitle())
+                .content(todoDto.getContent())
+                .build();
         todoMapper.save(todo);
         todo = findById(todo.getId());
         return todo;

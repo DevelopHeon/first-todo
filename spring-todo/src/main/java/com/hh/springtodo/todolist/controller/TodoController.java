@@ -41,14 +41,10 @@ public class TodoController {
         WebMvcLinkBuilder selfLink = linkTo(TodoController.class).slash(todo.getId());
         URI uri = selfLink.toUri();
 
-        TodoResource todoResource = new TodoResource(todo);
-        todoResource.add(linkTo(TodoController.class).withRel("queryTodos"));
-        todoResource.add(selfLink.withRel("updateTodos"));
-        todoResource.add(selfLink.withRel("deleteTodos"));
-
-        return ResponseEntity.created(uri).body(todoResource);
+        EntityModel<Todo> createResource = EntityModel.of(todo, selfLink.withSelfRel());
+        createResource.add(linkTo(TodoController.class).withRel("queryTodos"));
+        return ResponseEntity.created(uri).body(createResource);
     }
-
 
     @ApiOperation(value = "TodoList 전체 조회 및 조건 조회")
     @ApiImplicitParams({
@@ -79,12 +75,7 @@ public class TodoController {
     @GetMapping("/{id}")
     public ResponseEntity getTodos(@PathVariable Long id) {
         Todo todo = this.todoService.findById(id);
-
         TodoResource todoResource = new TodoResource(todo);
-        todoResource.add(linkTo(TodoController.class).slash(todo.getId()).withRel("updateTodos"));
-        todoResource.add(linkTo(TodoController.class).slash(todo.getId()).withRel("deleteTodos"));
-        todoResource.add(linkTo(TodoController.class).withRel("queryTodos"));
-
         return ResponseEntity.ok(todoResource);
     }
 
@@ -123,6 +114,7 @@ public class TodoController {
         this.todoService.deleteById(id);
         return ResponseEntity.ok("게시글 삭제 성공");
     }
+
     private static ResponseEntity badRequest(Errors errors) {
         return ResponseEntity.badRequest().body(new ErrorResource(errors));
     }
